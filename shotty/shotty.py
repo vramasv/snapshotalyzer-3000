@@ -82,14 +82,23 @@ help ="Create snapshots of all volumes")
 
 
 
-@def create_snapshots(project):
+def create_snapshots(project):
   "Create snapshots for Ec2 instances"
-  for i in instances:
-    for v in i.volumes.all():
-        print("Creating snaphshot of {0}".format(v.id))
-        v.create_snapshots(Description ="Created by snapshot analyzer")
+  instances =filter_instances(project)
 
-   return
+  for i in instances:
+      print("Stopping {0}".format(i.id))
+      i.stop()
+      i.wait_until_stopped()
+      for v in i.volumes.all():
+          print("Creating snaphshot of {0}".format(v.id))
+          v.create_snapshot(Description ="Created by snapshot analyzer")
+          print("Starting {0}".format(i.id))
+          i.start()
+          i.wait_until_running()
+
+  print("Job's done!")
+  return
 
 
 
